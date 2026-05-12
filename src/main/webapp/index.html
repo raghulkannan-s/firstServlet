@@ -3,9 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Will You Survive?</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+        :root {
+            --ink: #0c111b;
+            --muted: #5f6b7c;
+            --accent: #2e6bff;
+            --accent-soft: rgba(46, 107, 255, 0.18);
+            --glass: rgba(255, 255, 255, 0.72);
+            --line: rgba(12, 17, 27, 0.08);
+            --shadow: 0 20px 60px rgba(12, 17, 27, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 15% 20%, rgba(46, 107, 255, 0.14), transparent 42%),
+                radial-gradient(circle at 80% 10%, rgba(31, 219, 173, 0.12), transparent 40%),
+                linear-gradient(135deg, #f7f9ff 0%, #eef2ff 35%, #f6fbff 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .page {
+            width: min(980px, 100%);
+            display: grid;
+            gap: 24px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .title {
+            font-family: "Sora", system-ui, sans-serif;
+            font-size: clamp(2rem, 3vw, 2.8rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            max-width: 520px;
+        }
+
+        .card {
+            background: var(--glass);
+            border-radius: 16px;
+            padding: clamp(20px, 4vw, 36px);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            backdrop-filter: blur(14px);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.35), transparent 55%);
+            pointer-events: none;
+        }
+
+        .progress {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(12, 17, 27, 0.08);
+            border-radius: 999px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--accent), #60a5fa);
+            transition: width 0.35s ease;
+        }
+
+        .progress-text {
+            font-weight: 600;
+            color: var(--muted);
+            min-width: 110px;
+            text-align: right;
+        }
+
+        form {
+            display: grid;
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step {
+            display: none;
+            animation: fadeUp 0.4s ease;
+        }
+
+        .step.active {
+            display: grid;
+            gap: 12px;
+        }
+
+        .question-title {
+            font-family: "Sora", system-ui, sans-serif;
+            font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+            margin: 0;
+        }
+
+        .question-hint {
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .input-wrap {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            padding: 16px;
+            display: grid;
+            gap: 10px;
+            border: 1px solid var(--line);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            font-size: 1rem;
+            background: #fff;
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            font-family: "Sora", system-ui, sans-serif;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--line);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(46, 107, 255, 0.25);
+        }
+
+        .result {
+            margin-top: 16px;
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: rgba(12, 17, 27, 0.92);
+            color: #f8fafc;
+            font-weight: 500;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .progress-text {
+                text-align: left;
+            }
+        }
+    </style>
 </head>
 <body>
-    Hello dhostho!!
+    <div class="page">
+        <header>
+            <div>
+                <div class="title">Will You Survive?</div>
+                <p class="subtitle">Answer five quick questions. We will estimate your survival odds and drop a meme-worthy verdict.</p>
+            </div>
+            <div class="progress-text" id="progressText">Step 1 of 5</div>
+        </header>
+
+        <div class="card">
+            <div class="progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <form id="survivalForm">
+                <section class="step active" data-step="1">
+                    <h2 class="question-title">How many cups of tea fuel you daily?</h2>
+                    <p class="question-hint">Be honest. Chai does not count as water.</p>
+                    <div class="input-wrap">
+                        <label for="teaCups">Tea cups per day</label>
+                        <input type="number" id="teaCups" name="teaCups" min="0" required placeholder="e.g. 3">
+                    </div>
+                </section>
+
+                <section class="step" data-step="2">
+                    <h2 class="question-title">How many hours do you actually sleep?</h2>
+                    <p class="question-hint">Scrolling reels does not count as rest.</p>
+                    <div class="input-wrap">
+                        <label for="sleepHours">Sleep hours per day</label>
+                        <input type="number" id="sleepHours" name="sleepHours" min="0" required placeholder="e.g. 6">
+                    </div>
+                </section>
+
+                <section class="step" data-step="3">
+                    <h2 class="question-title">How many backlogs are following you?</h2>
+                    <p class="question-hint">Even one backlog counts as a boss fight.</p>
+                    <div class="input-wrap">
+                        <label for="backlogCount">Backlog count</label>
+                        <input type="number" id="backlogCount" name="backlogCount" min="0" required placeholder="e.g. 1">
+                    </div>
+                </section>
+
+                <section class="step" data-step="4">
+                    <h2 class="question-title">LeetCode problems solved since you Joined here?</h2>
+                    <p class="question-hint">Even two questions at 2 AM is valid.</p>
+                    <div class="input-wrap">
+                        <label for="leetCodeProblems">LeetCode solved</label>
+                        <input type="number" id="leetCodeProblems" name="leetCodeProblems" min="0" required placeholder="e.g. 8">
+                    </div>
+                </section>
+
+                <section class="step" data-step="5">
+                    <h2 class="question-title">Last assessment: problems solved?</h2>
+                    <p class="question-hint">Count the ones you solved cleanly.</p>
+                    <div class="input-wrap">
+                        <label for="lastAssessmentProblems">Assessment solved</label>
+                        <input type="number" id="lastAssessmentProblems" name="lastAssessmentProblems" min="0" required placeholder="e.g. 4">
+                    </div>
+                </section>
+
+                <div class="nav">
+                    <button type="button" class="btn-ghost" id="prevBtn">Back</button>
+                    <button type="button" class="btn-primary" id="nextBtn">Next</button>
+                    <button type="submit" class="btn-primary" id="submitBtn">Reveal Verdict</button>
+                </div>
+            </form>
+
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('survivalForm');
+        const steps = Array.from(document.querySelectorAll('.step'));
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const resultBox = document.getElementById('result');
+        let currentStep = 0;
+
+        const updateStep = () => {
+            steps.forEach((step, index) => {
+                step.classList.toggle('active', index === currentStep);
+            });
+
+            const progress = ((currentStep + 1) / steps.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `Step ${currentStep + 1} of ${steps.length}`;
+
+            prevBtn.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+            nextBtn.style.display = currentStep === steps.length - 1 ? 'none' : 'inline-flex';
+            submitBtn.style.display = currentStep === steps.length - 1 ? 'inline-flex' : 'none';
+        };
+
+        const validateCurrentStep = () => {
+            const input = steps[currentStep].querySelector('input');
+            if (!input) {
+                return true;
+            }
+            if (!input.checkValidity()) {
+                input.reportValidity();
+                return false;
+            }
+            return true;
+        };
+
+        nextBtn.addEventListener('click', () => {
+            if (!validateCurrentStep()) {
+                return;
+            }
+            currentStep = Math.min(currentStep + 1, steps.length - 1);
+            updateStep();
+        });
+
+        prevBtn.addEventListener('click', () => {
+            currentStep = Math.max(currentStep - 1, 0);
+            updateStep();
+        });
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!validateCurrentStep()) {
+                return;
+            }
+
+            const formData = new FormData(form);
+            const body = new URLSearchParams(formData).toString();
+
+            try {
+                const response = await fetch('/willYouSurvive', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    resultBox.textContent = result.error || 'Something went wrong. Try again.';
+                } else {
+                    resultBox.textContent = `Survival Percentage: ${result.survivalPercentage}% - ${result.message}`;
+                }
+            } catch (error) {
+                resultBox.textContent = 'Server is not reachable. Is Tomcat running?';
+            }
+
+            resultBox.classList.add('show');
+        });
+
+        form.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') {
+                return;
+            }
+            if (currentStep < steps.length - 1) {
+                event.preventDefault();
+                if (validateCurrentStep()) {
+                    currentStep = Math.min(currentStep + 1, steps.length - 1);
+                    updateStep();
+                }
+            }
+        });
+
+        updateStep();
+    </script>
 </body>
 </html>
